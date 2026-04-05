@@ -62,11 +62,8 @@ outfile.close();
 Sleep(5000);
 }
 
-void addCash(Account user){
+void addCash(string currentUser){
     system("cls");
-    string id;
-    cout<<"\tEnter Account No: ";
-    cin>>id;
 
     ifstream infile("C:/Users/Debabrata Kundu/Desktop/account.txt");
     ofstream outfile("C:/Users/Debabrata Kundu/Desktop/temp.txt");
@@ -78,32 +75,35 @@ void addCash(Account user){
     string line;
     bool found= false;
 
+            int cash;
+            cout<<"\tEnter Cash: ";
+            cin>>cash;
+
     while(getline(infile, line)) {
+        if(line.empty()) continue;
+           
         stringstream ss;
         ss<<line;
         string userid, userpass;
         int userbalance;
         char delimiter;
 
-getline(ss, userid, ':');
-getline(ss, userpass, ':');
-ss >> userbalance;        if(id == userid){
+    getline(ss, userid, ':');
+    getline(ss, userpass, ':');
+    ss >> userbalance;       
+         if(userid == currentUser){
             found=true;
-            int cash;
-            cout<<"\tEnter Cash: ";
-            cin>>cash;
-
             int newbalance= userbalance + cash;
             userbalance= newbalance;
             outfile<<userid<<":"<<userpass<<":"<<userbalance<<endl;
             cout<<"\tNew Balance is: "<<userbalance<<endl;
-        }
-        else{
+            }
+            else
             outfile<<line<<endl;
-        }
+        
     }
-    if(!found) {
-        cout<<"\t Enter Valid Account no! "<<endl;
+    if(!found){
+        cout<<"\tUser not found!\n";
     }
     outfile.close();
     infile.close();
@@ -111,13 +111,7 @@ ss >> userbalance;        if(id == userid){
     rename("C:/Users/Debabrata Kundu/Desktop/temp.txt", "C:/Users/Debabrata Kundu/Desktop/account.txt"); 
     Sleep(5000);
 }
-void withdraw(){
-    string id, pass;
-    cout<<"\t Enter Account No"<<endl;
-    cin>>id;
-
-    cout<<"\t Enter password"<<endl;
-    cin>>pass;
+void withdraw(string currentUser){
 
     ifstream infile("C:/Users/Debabrata Kundu/Desktop/account.txt");
     ofstream outfile("C:/Users/Debabrata Kundu/Desktop/temp.txt");
@@ -139,7 +133,7 @@ void withdraw(){
 getline(ss, userid, ':');
 getline(ss, userpass, ':');
 ss >> userbalance;
-        if(id == userid && pass == userpass) {
+        if(currentUser == userid) {
             found=true;
             int cash;
             cout<<"\tEnter Cash: ";
@@ -169,6 +163,37 @@ ss >> userbalance;
     rename("C:/Users/Debabrata Kundu/Desktop/temp.txt", "C:/Users/Debabrata Kundu/Desktop/account.txt"); 
     Sleep(5000);
 }
+bool login(string &loggedInId) {
+    string id, pass;
+    cout<<"\tEnter Account No:";
+    cin>>id;
+    cout<<"\tEnter Password:";
+    cin>>pass;
+
+    ifstream infile("C:/Users/Debabrata Kundu/Desktop/account.txt");
+    if(!infile) {
+        cout<<"\tError opening file!"<<endl;
+        return false;
+    }
+    string line;
+    while(getline(infile, line)) {
+        if(line.empty()) continue;
+
+        stringstream ss(line);
+        string userid, userpass;
+        int userbalance;
+
+        getline(ss,userid,':');
+        getline(ss,userpass,':');
+        ss>>userbalance;
+
+        if(id == userid && pass==userpass) {
+            loggedInId= id;
+            return true;
+        }
+    }
+    return false;
+}
 int main() {
     Account user;
 
@@ -179,9 +204,8 @@ int main() {
         cout<<"\tWelcome to the Bank Account Management System\n";
         cout<<"\t*********************************\n";
         cout<<"\t1. Open new account\n";
-        cout<<"\t2. Add cash\n";
-        cout<<"\t3. Withdraw cash\n";
-        cout<<"\t4. Exit\n";
+        cout<<"\t2. Login\n";
+        cout<<"\t3. Exit\n";
         cout<<"\tEnter Your Choice: ";
         cin>>val;
 
@@ -190,18 +214,41 @@ int main() {
         }
 
         else if(val == 2){
-            addCash(user);
+            string currentUser;
+
+            if(login(currentUser)) {
+                cout<<"\n\tLogin successful!\n";
+                Sleep(2000);
+                int choice;
+                do{
+                    system("cls");
+                    cout<<"\t1. Add cash\n";
+                    cout<<"\t2. Withdraw cash\n";
+                    cout<<"\t3. Logout\n";
+                    cout<<"\tEnter Your Choice: ";
+                    cin>>choice;
+
+                    if(choice==1)
+                    addCash(currentUser);
+                    else if(choice==2)
+                    withdraw(currentUser);
+                }while(choice != 3);
+            }
+            else{
+                cout<<"\tInvalid Account No or Password!\n";
+                Sleep(2000);
+            }
         }
         else if(val == 3) {
-            withdraw();
-        }
-
-        else if(val == 4){
             system("cls");
             exit= true;
-            cout<<"\tThank you for using our service!"<<endl;
-            Sleep(3000);
+            cout<<"\tThank You for using our service!"<<endl;
+            Sleep(2000);
         }
-        Sleep(3000);
+
+        else {
+            cout<<"\tInvalid Choice!\n";
+            Sleep(2000);
+        }
     }
 }
